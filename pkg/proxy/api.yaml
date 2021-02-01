@@ -1,0 +1,674 @@
+openapi: 3.0.0
+info:
+  version: 2.0.0
+  title: dnsdb
+  description: dnsdb
+components:
+  securitySchemes:
+    apikey:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+  schemas:
+    pdns_cof:
+      type: object
+      properties:
+        rrname:
+          type: string
+        rrtype:
+          type: string
+        bailiwick:
+          type: string
+        rdata:
+          oneOf:
+            - type: array
+              items:
+                type: string
+            - type: string
+        count:
+          type: number
+        time_first:
+          type: number
+        time_last:
+          type: number
+        zone_time_first:
+          type: number
+        zone_time_last:
+          type: number
+      required:
+        - rrname
+        - rrtype
+        - bailiwick
+        - count
+      additionalProperties: false
+      oneOf:
+        - required:
+            - time_first
+            - time_last
+        - required:
+            - zone_time_first
+            - zone_time_last
+    summarize:
+      type: object
+      properties:
+        count:
+          type: number
+        num_results:
+          type: number
+        time_first:
+          type: number
+        time_last:
+          type: number
+        zone_time_first:
+          type: number
+        zone_time_last:
+          type: number
+      required:
+        - count
+        - num_results
+      anyOf:
+        - required:
+            - time_first
+            - time_last
+        - required:
+            - zone_time_first
+            - zone_time_last
+    flex:
+      type: object
+      properties:
+        rrname:
+          type: string
+        rdata:
+          type: string
+        rdata_raw:
+          type: string
+        rrtype:
+          type: string
+      required:
+        - rrtype
+      additionalProperties: false
+      oneOf:
+        - required:
+            - rrname
+        - required:
+            - rdata
+            - rdata_raw
+    ping:
+      type: object
+      properties:
+        ping:
+          type: string
+          enum:
+            - ok
+      additionalProperties: false
+      required:
+        - ping
+      example:
+        ping: ok
+    rate_limit:
+      type: object
+      properties:
+        limit:
+          oneOf:
+            - type: number
+            - type: string
+              enum:
+                - unlimited
+        remaining:
+          oneOf:
+            - type: number
+            - type: string
+              enum:
+                - n/a
+        reset:
+          oneOf:
+            - type: number
+            - type: string
+              enum:
+                - n/a
+        expires:
+          type: number
+        results_max:
+          type: number
+        offset_max:
+          type: number
+        burst_size:
+          type: number
+        burst_window:
+          type: number
+  parameters:
+    value:
+      in: path
+      name: value
+      description: Value
+      required: true
+      schema:
+        type: string
+    rrset_type:
+      in: path
+      name: type
+      description: Type of query
+      required: true
+      schema:
+        type: string
+        enum:
+          - name
+          - raw
+    rdata_type:
+      in: path
+      name: type
+      description: Type of query
+      required: true
+      schema:
+        type: string
+        enum:
+          - name
+          - ip
+          - raw
+    rrtype:
+      in: path
+      name: rrtype
+      description: rrtype
+      required: true
+      schema:
+        type: string
+    bailiwick:
+      in: path
+      name: bailiwick
+      description: bailiwick
+      required: true
+      schema:
+        type: string
+    time_first_before:
+      in: query
+      name: time_first_before
+      description: time first before
+      required: false
+      schema:
+        type: number
+    time_first_after:
+      in: query
+      name: time_first_after
+      description: time first after
+      required: false
+      schema:
+        type: number
+    time_last_before:
+      in: query
+      name: time_last_before
+      description: time last before
+      required: false
+      schema:
+        type: number
+    time_last_after:
+      in: query
+      name: time_last_after
+      description: time last after
+      required: false
+      schema:
+        type: number
+    limit:
+      in: query
+      name: limit
+      description: Limit
+      required: false
+      schema:
+        type: number
+        minimum: 1
+    swclient:
+      in: query
+      name: swclient
+      description: swclient
+      required: false
+      schema:
+        type: string
+    version:
+      in: query
+      name: version
+      description: version
+      required: false
+      schema:
+        type: string
+    id:
+      in: query
+      name: id
+      description: id
+      required: false
+      schema:
+        type: string
+    aggr:
+      in: query
+      name: aggr
+      description: aggr
+      required: false
+      schema:
+        type: boolean
+    humantime:
+      in: query
+      name: humantime
+      description: humantime
+      required: false
+      schema:
+        type: boolean
+    offset:
+      in: query
+      name: offset
+      description: offset
+      required: false
+      schema:
+        type: number
+        minimum: 0
+    max_count:
+      in: query
+      name: max_count
+      description: max count
+      required: false
+      schema:
+        type: number
+        minimum: 1
+  responses:
+    lookup:
+      description: 'lookup response'
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                obj:
+                  "$ref": "#/components/schemas/pdns_cof"
+      headers:
+        X-RateLimit-Limit:
+          "$ref": "#/components/headers/X-RateLimit-Limit"
+        X-RateLimit-Remaining:
+          "$ref": "#/components/headers/X-RateLimit-Remaining"
+        X-RateLimit-Reset:
+          "$ref": "#/components/headers/X-RateLimit-Reset"
+        X-RateLimit-Expires:
+          "$ref": "#/components/headers/X-RateLimit-Expires"
+    summarize:
+      description: 'summarize response'
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                obj:
+                  "$ref": "#/components/schemas/summarize"
+      headers:
+        X-RateLimit-Limit:
+          "$ref": "#/components/headers/X-RateLimit-Limit"
+        X-RateLimit-Remaining:
+          "$ref": "#/components/headers/X-RateLimit-Remaining"
+        X-RateLimit-Reset:
+          "$ref": "#/components/headers/X-RateLimit-Reset"
+        X-RateLimit-Expires:
+          "$ref": "#/components/headers/X-RateLimit-Expires"
+  headers:
+    X-RateLimit-Limit:
+      description: limit in period
+      schema:
+        oneOf:
+          - type: number
+          - type: string
+            enum:
+              - "unlimited"
+    X-RateLimit-Remaining:
+      description: remaining in period
+      schema:
+        oneOf:
+          - type: number
+          - type: string
+            enum:
+              - "n/a"
+    X-RateLimit-Reset:
+      description: when period resets
+      schema:
+        oneOf:
+          - type: number
+          - type: string
+            enum:
+              - "n/a"
+    X-RateLimit-Expires:
+      description: when period expires
+      schema:
+        type: number
+      allowEmptyValue: true
+paths:
+  '/ping':
+    get:
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ping"
+  '/rate_limit':
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          description: rate limit
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/rate_limit"
+              examples:
+                time based quota:
+                  value:
+                    rate:
+                      reset: 1433980800
+                      limit: 1000
+                      remaining: 999
+                block quota:
+                  value:
+                    rate:
+                      reset: n/a
+                      burst_size: 10
+                      expires: 1555370914
+                      burst_window: 300
+                      "offset\_max": 3000000
+                      results_max: 256
+                      limit: 600
+                      remaining: 8
+                unlimited:
+                  value:
+                    rate:
+                      reset: n/a
+                      limit: unlimited
+                      remaining: n/a
+  '/lookup/rrset/{type}/{value}':
+    parameters:
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/rrset_type"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/aggr"
+      - "$ref": "#/components/parameters/humantime"
+      - "$ref": "#/components/parameters/offset"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/lookup"
+  '/lookup/rrset/{type}/{value}/{rrtype}':
+    parameters:
+      - "$ref": "#/components/parameters/rrset_type"
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/rrtype"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/aggr"
+      - "$ref": "#/components/parameters/humantime"
+      - "$ref": "#/components/parameters/offset"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/lookup"
+  '/lookup/rrset/{type}/{value}/{rrtype}/{bailiwick}':
+    parameters:
+      - "$ref": "#/components/parameters/rrset_type"
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/rrtype"
+      - "$ref": "#/components/parameters/bailiwick"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/aggr"
+      - "$ref": "#/components/parameters/humantime"
+      - "$ref": "#/components/parameters/offset"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/lookup"
+  '/lookup/rdata/{type}/{value}':
+    parameters:
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/rdata_type"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/aggr"
+      - "$ref": "#/components/parameters/humantime"
+      - "$ref": "#/components/parameters/offset"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/lookup"
+  '/lookup/rdata/{type}/{value}/{rrtype}':
+    parameters:
+      - "$ref": "#/components/parameters/rdata_type"
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/rrtype"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/aggr"
+      - "$ref": "#/components/parameters/humantime"
+      - "$ref": "#/components/parameters/offset"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/lookup"
+  '/summarize/rrset/{type}/{value}':
+    parameters:
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/rrset_type"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/aggr"
+      - "$ref": "#/components/parameters/humantime"
+      - "$ref": "#/components/parameters/max_count"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/summarize"
+  '/summarize/rrset/{type}/{value}/{rrtype}':
+    parameters:
+      - "$ref": "#/components/parameters/rrset_type"
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/rrtype"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/aggr"
+      - "$ref": "#/components/parameters/humantime"
+      - "$ref": "#/components/parameters/max_count"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/summarize"
+  '/summarize/rrset/{type}/{value}/{rrtype}/{bailiwick}':
+    parameters:
+      - "$ref": "#/components/parameters/rrset_type"
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/rrtype"
+      - "$ref": "#/components/parameters/bailiwick"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/aggr"
+      - "$ref": "#/components/parameters/humantime"
+      - "$ref": "#/components/parameters/max_count"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/summarize"
+  '/summarize/rdata/{type}/{value}':
+    parameters:
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/rdata_type"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/aggr"
+      - "$ref": "#/components/parameters/humantime"
+      - "$ref": "#/components/parameters/max_count"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/summarize"
+  '/summarize/rdata/{type}/{value}/{rrtype}':
+    parameters:
+      - "$ref": "#/components/parameters/rdata_type"
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/rrtype"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/aggr"
+      - "$ref": "#/components/parameters/humantime"
+      - "$ref": "#/components/parameters/max_count"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          "$ref": "#/components/responses/summarize"
+  "/{method}/{key}/{value}":
+    description: Flex search
+    parameters:
+      - in: path
+        name: method
+        description: flex search method
+        required: true
+        schema:
+          type: string
+          enum:
+            - regex
+            - glob
+      - in: path
+        name: key
+        description: search key
+        required: true
+        schema:
+          type: string
+          enum:
+            - rrnames
+            - rdata
+      - "$ref": "#/components/parameters/value"
+      - "$ref": "#/components/parameters/time_first_before"
+      - "$ref": "#/components/parameters/time_first_after"
+      - "$ref": "#/components/parameters/time_last_before"
+      - "$ref": "#/components/parameters/time_last_after"
+      - "$ref": "#/components/parameters/limit"
+      - "$ref": "#/components/parameters/id"
+      - "$ref": "#/components/parameters/swclient"
+      - "$ref": "#/components/parameters/version"
+      - in: query
+        name: exclude
+        required: false
+        schema:
+          type: string
+      - "$ref": "#/components/parameters/offset"
+    get:
+      security:
+        - apikey: []
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    obj:
+                      "$ref": "#/components/schemas/flex"
+              examples:
+                rrnames:
+                  value:
+                    - obj:
+                        rname: dnsdb.info.
+                rdata:
+                  value:
+                    - obj:
+                        rdata: dnsdb.info.
+                        rdata_raw: 05646E73646204696E666F00
+          headers:
+            X-RateLimit-Limit:
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            X-RateLimit-Remaining:
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            X-RateLimit-Reset:
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            X-RateLimit-Expires:
+              "$ref": "#/components/headers/X-RateLimit-Expires"
+servers:
+  - url: 'https://dnsdbfront.labs.fsi.io/dnsdb/v2'
